@@ -1,0 +1,134 @@
+<div class="wide box" data-aos="fade-up" data-aos-once="true">
+  <div class="container padding20"> 
+    <h1>{{ job.title }}</h1>
+    <div class="head">
+      <h2>{{ job.company }}</h2>
+      <button mat-stroked-button color="primary" (click)="link(job.id)" style="margin-left: 5%;"><mat-icon>link</mat-icon > Share</button>
+    </div>
+   
+    <div class="head">
+      <div class="head">
+        <mat-icon class="icn marginr20">access_time</mat-icon >
+        <h4>Time</h4>
+      </div>
+      <div class="hpair">
+        <h2>{{ job.hours }} {{ job.time == 1 ? 'hour' : 'hours' }}</h2>
+        <h4 style="color: #b0b9c2">{{ job.overtime ? 'Overtime available' : 'No overtime' }}</h4>
+      </div>
+    </div>
+
+    <div class="head">
+      <div class="head">
+        <mat-icon class="icn marginr20">business_center</mat-icon >
+        <h4>Industries</h4>
+      </div>
+      <ul>
+        <li *ngIf="job.industries?.length < 1">Industries not selected</li>
+        <li *ngFor="let industry of job.industries">{{ industry }}</li>
+      </ul>
+    </div>
+
+    <div class="head" *ngIf="job.tags?.length > 0">
+      <div class="head">
+        <mat-icon class="icn marginr20">local_offer</mat-icon >
+        <h4>Tags</h4>
+      </div>
+      <ul>
+        <li class="tag" *ngFor="let tag of job.tags">#{{ tag }}</li>
+      </ul>
+    </div>
+
+    <h3>Benefits</h3>
+    <div class="head">
+      <div class="head">
+        <mat-icon class="icn marginr20">date_range</mat-icon >
+        <h4>Holidays per year</h4>
+      </div>
+      <h2>{{ job.holidays }}</h2>
+    </div>
+    
+    <div class="head">
+      <div class="head">
+        <mat-icon class="icn marginr20">attach_money</mat-icon >
+        <h4>Salary</h4>
+      </div>
+      <div class="hpair">
+        <h2>{{ job.salary | currency: job.currency }}</h2>
+        <h4 style="color: #b0b9c2">{{ job.time }}</h4>
+      </div>
+    </div>
+    
+    <div class="head wrap">
+      <div class="head">
+        <mat-icon class="icn marginr20">redeem</mat-icon >
+        <h4>Other job perks</h4>
+      </div>
+      <ul>
+        <li class="tag" *ngFor="let perk of job.perks">{{ perk }}</li>
+      </ul>  
+    </div>
+    
+    <h2>Locations</h2>
+  
+    <agm-map [zoom]="2" [latitude]=job.locations[0].geopoint.latitude [longitude]=job.locations[0].geopoint.longitude>
+      <agm-marker *ngFor="let l of job.locations" [latitude]=l.geopoint.latitude [longitude]=l.geopoint.longitude>
+        <agm-info-window><a style="color: #3b6ca3" href="https://www.google.com/maps/search/?api=1&query={{l.address}}" target="_blank">{{ l.address }}</a></agm-info-window>
+      </agm-marker>
+    </agm-map>
+
+    <h2 *ngIf="job.mission?.length > 0">Mission statement</h2>
+    <p class="padding100 txtpreline">{{ job.mission }}</p>
+    
+    <h2 *ngIf="job.responsibilities?.length > 0">Responsibilities</h2>
+    <div class="bullet" *ngFor="let responsibility of job.responsibilities">
+      <svg height="20" width="50">
+        <circle cx="10" cy="10" r="5" stroke="#009688" stroke-width="2" fill="transparent"/>
+      </svg>
+      <p>{{ responsibility }}</p>
+    </div>
+    
+    <h2 *ngIf="job.essentials?.length > 0">Essential skills</h2>
+    <div class="bullet" *ngFor="let essential of job.essentials">
+      <svg height="20" width="50">
+        <circle cx="10" cy="10" r="5" stroke="#009688" stroke-width="2" fill="transparent"/>
+      </svg>
+      <p>{{ essential }}</p>
+    </div>
+      
+    <h2 *ngIf="job.bonuses?.length > 0">Bonus skills</h2>
+    <div class="bullet" *ngFor="let bonus of job.bonuses">
+      <svg height="20" width="50">
+        <circle cx="10" cy="10" r="5" stroke="#009688" stroke-width="2" fill="transparent"/>
+      </svg>
+      <p>{{ bonus }}</p>
+    </div>
+  
+    <h2 *ngIf="job.questions?.length > 0">Pre-Screening Questions</h2>
+    <div class="bullet" *ngFor="let question of job.questions">
+      <svg height="20" width="50">
+        <circle cx="10" cy="10" r="5" stroke="#009688" stroke-width="2" fill="transparent"/>
+      </svg>
+      <p>{{ question }}</p>
+    </div>
+  
+    <p style="opacity: 0.5">Job last updated on {{ job.timestamp.toDate() | date: 'd MMMM y' }}</p>
+  
+    <div *ngIf="auth.user$ | async as user; else login" class="buttons">
+      <button mat-flat-button color="primary" style="min-width: 300px !important;"
+      [disabled]="!user || user.uid == job.recruiteruid || applied ? true : false" 
+      (click)="createApplication(user)">
+        {{
+          user.uid == job.recruiteruid ? 'You are the recruiter.' : 
+          applied ? 'You applied on ' + (applied.toDate() | date: 'd MMMM y') :
+          'Apply'
+        }}
+      </button>
+    </div>
+    <ng-template #login>
+      <h4 class="margin10 txtcenter">You must be logged in to apply</h4>
+    </ng-template>
+
+  </div>
+</div>
+
+<!-- Add your recruitment team section -->
