@@ -1,0 +1,58 @@
+<div class="wide padding10" *ngIf="{ user: auth.user$ | async } as data">
+  <div class="head">
+    <h1>Job search</h1>
+    <mat-slide-toggle *ngIf="data.user" color="primary" (change)="filterRecents($event, data.user.recents)" labelPosition="before">Filter recents</mat-slide-toggle>
+  </div>
+  <div style="display: flex; margin-bottom: 25px;">
+    <div id="search">
+      <mat-icon style="padding: 5px 10px;">search</mat-icon >
+      <input [(ngModel)]="search" placeholder="Search..." autocomplete="off" (keyup)="datasearch($event.target.value)" color="white">
+      <button mat-button matSuffix mat-icon-button aria-label="Clear" (click)="search=''; datasearch('')">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    <button mat-flat-button color="accent" style="margin-left: 5px;" (click)="filterDialog()"><mat-icon>filter_list</mat-icon ></button>
+  </div>
+
+  <!-- <div class="cont">
+    <div class="cities">
+      <div class="city pointer marginr20" data-aos="fade-left" data-aos-once="true" *ngFor="let c of cities; let idx = index; trackBy: trackByIndex" (click)="fly(c)">
+        <img src="../../assets/cities/{{c.name}}.jpg" alt="Image of cityscape" class="cityscape marginr20">
+        <p>{{ c.name | titlecase }}</p>
+      </div>
+    </div>
+  </div> -->
+
+  <table mat-table [dataSource]="dataSource" [trackBy]="trackByIndex" matSort multiTemplateDataRows>
+    <ng-container matColumnDef="company">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header >Company</th>
+      <td class="tcell" mat-cell *matCellDef="let element">{{ element.company }}</td>
+    </ng-container>
+    <ng-container matColumnDef="title">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header >Title</th>
+      <td class="tcell" mat-cell *matCellDef="let element">{{ element.title }}</td>
+    </ng-container>
+    <ng-container matColumnDef="date">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header class="txtcenter" >Date</th>
+      <td class="tcell" mat-cell *matCellDef="let element">{{ element.timestamp.toDate() | date: 'dd MMM' }}</td>
+    </ng-container>
+
+    <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
+    <ng-container matColumnDef="expandedDetail">
+      <td mat-cell class="extend" *matCellDef="let element" [attr.colspan]="displayedColumns.length" [@detailExpand]="element.id == expandedElement ? 'expanded' : 'collapsed'">
+        <app-job-details *ngIf="expandedElement == element.id" [job]='element'></app-job-details> 
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let element; columns: displayedColumns;"
+      class="element-row pointer" style="outline: none;"
+      [class.expanded-row]="expandedElement === element.id"
+      (click)="expandedElement === element.id; expandedElement = expandedElement === element.id ? null : element.id">
+    </tr>
+    <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
+  </table>
+
+  <app-loading-spinner *ngIf="!loaded" [colour]="'#009688'"></app-loading-spinner>
+  <mat-paginator [pageSizeOptions]="[50, 100, 200]" showFirstLastButtons></mat-paginator>
+</div>

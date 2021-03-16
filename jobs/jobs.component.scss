@@ -1,0 +1,48 @@
+.recents {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.recent {
+  display: block;
+  flex: 1 1 300px;
+  margin: 10px;
+  padding: 15px;
+  border-radius: 5px;
+  font-size: 85%;
+  transition: background-color 0.5s ease;
+}
+
+.recent:hover {
+  background: #f1ffff;
+  cursor: pointer;
+}
+
+.cont {
+  overflow-x: scroll;
+  @media only screen and (max-width: 650px) {
+    max-height: 400px;
+  }
+}::-webkit-scrollbar {
+  display: none;
+}
+
+.cities {
+  display: flex;
+  @media only screen and (max-width: 650px) {
+    width: 250%;
+  }
+}
+
+.cityscape {
+  height: 70px;
+  max-width: 80px;
+  border-radius: 5px;
+}
+
+.city {
+  margin: 15px;
+  display: flex;
+  align-items: center;
+}
