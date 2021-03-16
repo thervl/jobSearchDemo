@@ -1,0 +1,47 @@
+<mat-dialog-content class="dialog" [formGroup]="filters"> 
+  
+    <div class="head">
+      <h3>Filters</h3>
+      <mat-icon class="close-icon pointer" (click)="close(false)">close</mat-icon >
+    </div>
+  
+    <mat-form-field>
+      <mat-select placeholder="Industries" formControlName="industries" multiple >
+        <mat-select-trigger>
+          {{ filters.value.industries ? filters.value.industries[0] : '' }}
+          <span *ngIf="filters.value.industries?.length > 1" class="example-additional-selection">
+            (+{{filters.value.industries.length - 1}} {{filters.value.industries?.length === 2 ? 'other' : 'others'}})
+          </span>
+        </mat-select-trigger>
+        <mat-option *ngFor="let industry of industryList" [value]="industry">{{ industry }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  
+    <div class="head">
+      <h4 class="margin-4">Hours per week</h4>
+      <h4 class="margin-4">up to {{ filters.value.hours }}</h4>
+    </div>
+    <mat-slider (input)="updateHours($event)" [min]=1 [max]=80 formControlName="hours" ></mat-slider>
+  
+    <mat-form-field>
+      <mat-label>Remote working</mat-label>
+      <mat-select (selectionChange)="remoteSwitch($event)" formControlName="remote">
+        <mat-option *ngFor="let r of ['Include remote', 'Only remote']" [value]="r">
+          {{ r }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  
+    <mat-form-field>
+        <input matInput placeholder="Location" formControlName="location" matGoogleMapsAutocomplete type=address strictBounds=true (onAutocompleteSelected)="onAutocompleteSelected($event)">
+    </mat-form-field>
+  
+    <h4 class="margin-4">Distance<span style="float:right;">{{ filters.value.distance }} km</span></h4>
+    <mat-slider (input)="updateDistance($event)" [max]=100 [min]=1 formControlName="distance" ></mat-slider>
+  
+    <div class="buttons margin100">
+      <button mat-raised-button color="primary" class="margin10" (click)="close(true)">Apply</button>
+      <button mat-raised-button color="warn" class="margin10" (click)="clear()">Clear</button>
+    </div>
+  
+</mat-dialog-content>
