@@ -1,0 +1,212 @@
+<div *ngIf="{ user: auth.user$ | async, job: job$ | async } as data" class="box wide">
+    <div class="container padding20" *ngIf="data.job && data.user">
+        <app-back [address]="'vacancies'"></app-back>
+        <h1>Edit vacancy</h1>
+        <div *ngIf="data.job.recruiteruid == data.user.uid" [formGroup]="jobpost">
+            <!-- <div formControlName="recruiteruid"></div> -->
+            <mat-form-field appearance="outline" class="formField">
+                <mat-label>Position title</mat-label>
+                <input formControlName="title" #title maxlength="150" matInput autocomplete="off">
+                <mat-hint align="end">{{ title.value.length }} / 150</mat-hint>
+                <mat-error>Job vacancy title is required.</mat-error>
+            </mat-form-field>
+            
+            <mat-form-field appearance="outline" class="formField">
+                <mat-label>Company name</mat-label>
+                <input formControlName="company" #company maxlength="150" matInput autocomplete="off">
+                <mat-hint align="end">{{ company.value.length }} / 150</mat-hint>
+                <mat-error>Company name is required.</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="formField">
+                <mat-label>Mission statement</mat-label>
+                <textarea matInput formControlName="mission" #mission maxlength="1200" cdkTextareaAutosize #autosize="cdkTextareaAutosize" cdkAutosizeMinRows="1"></textarea>
+                <mat-hint align="end" >{{ mission.value.length }} / 1200</mat-hint>
+            </mat-form-field>
+
+            <mat-form-field class="formField" >
+                <mat-chip-list formArrayName="tags" #tagList>
+                    <mat-chip *ngFor="let tag of jobpost.value.tags; let i = index; trackBy: trackByFn" color="primary" selected>
+                    {{ tag }}
+                    <mat-icon style="margin-left: 10px" (click)="remove('tags', i)">cancel</mat-icon>
+                    </mat-chip>
+                    <input placeholder="Job tags" #tag
+                            [matChipInputFor]="tagList"
+                            (keyup.enter)="add('tags', tag)">
+                </mat-chip-list>
+                <mat-hint align="end" (click)="add('tags', tag)" ><strong>Enter</strong></mat-hint>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="formField">
+                <mat-select placeholder="Industries" formControlName="industries" multiple >
+                    <mat-select-trigger>
+                    {{ jobpost.value.industries ? jobpost.value.industries[0] : '' }}
+                    <span *ngIf="jobpost.value.industries?.length > 1" class="example-additional-selection">
+                        (+{{ jobpost.value.industries.length - 1 }} {{ jobpost.value.industries?.length === 2 ? 'other' : 'others' }})
+                    </span>
+                    </mat-select-trigger>
+                    <mat-option *ngFor="let industry of industryList; trackBy: trackByFn" [value]="industry">{{ industry }}</mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <h2>Job profile</h2>
+            
+            <mat-expansion-panel>
+                <mat-expansion-panel-header>
+                    Templates
+                </mat-expansion-panel-header>
+                <ng-template matExpansionPanelContent>
+                    <mat-form-field appearance="outline" class="formField">
+                        <mat-label>Start from a template</mat-label>
+                        <mat-select (selectionChange)="select($event)">
+                            <mat-option *ngFor="let t of templates$ | async; trackBy: trackByFn" [value]="t.id">
+                                {{ t.id | titlecase }}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </ng-template>
+            </mat-expansion-panel>
+
+            <div *ngFor="let arrayName of inputArrays; trackBy: trackByFn">
+                <mat-expansion-panel>
+                    <mat-expansion-panel-header>
+                        {{ arrayName != 'responsibilities' ? ( arrayName + ' skills' | titlecase ) : arrayName | titlecase }}
+                    </mat-expansion-panel-header>
+                    <ng-template matExpansionPanelContent>
+                        <div formArrayName={{arrayName}}>
+                            <div cdkDropList class="drop-list" (cdkDropListDropped)="drop(arrayName, $event)">
+                                <div class="list-box" *ngFor="let arrayItem of jobpost.value[arrayName]; let i = index; trackBy: trackByFn" cdkDrag>
+                                    <mat-icon cdkDragHandle class="mover">format_line_spacing</mat-icon >
+                                    <span style="text-align: left; flex: 1;">{{ arrayItem }}</span>
+                                    <mat-icon class="remove-icon" (click)="remove(arrayName, i)">remove_circle</mat-icon >
+                                </div>
+                            </div>
+                            <mat-form-field appearance="outline" class="formField">
+                                <mat-label>Add new {{ arrayName != 'responsibilities' ? arrayName + ' skill' : 'responsibility' }}</mat-label>
+                                <input matInput placeholder="Input and hit enter" (paste)="paste(arrayName, input)" (keyup.enter)="add(arrayName, input)" #input autocomplete="off">
+                                <mat-hint align="start">You can copy and paste bulletpointed lists</mat-hint>
+                                <mat-hint align="end" (click)="add(arrayName, input)" ><strong>Enter</strong></mat-hint>
+                                <mat-error>This field is required.</mat-error>
+                            </mat-form-field>
+                        </div>
+                        </ng-template>    
+                </mat-expansion-panel>
+            </div>
+
+            <mat-form-field appearance="outline" class="formField margin10" *ngIf="data.user.uid == 'bHhYrIpEHshcsrK1jeJk8Padxap1' ">
+                <mat-label>Save to templates</mat-label>
+                <input matInput type="search" placeholder="Input and hit enter" #name autocomplete="off"
+                (keyup.enter)="templater(name)">
+                <mat-hint align="end" (click)="templater(name)" ><strong>Enter</strong></mat-hint>
+            </mat-form-field>
+
+            <div formArrayName="questions" *ngIf="questions$ | async as questions">
+                <h3>Pre-screening questions</h3>
+                <div cdkDropList class="drop-list" (cdkDropListDropped)="drop('questions', $event)">
+                    <div class="list-box" *ngFor="let question of jobpost.get('questions').value; let j=index; trackBy: trackByFn" cdkDrag>
+                        <mat-icon cdkDragHandle class="mover">format_line_spacing</mat-icon >
+                        <span style="text-align: left; flex: 1;">{{ question }}</span>
+                        <mat-icon class="remove-icon" (click)="remove('questions', j)">remove_circle</mat-icon >
+                    </div>
+                </div>
+
+                <mat-form-field appearance="outline" class="formField">
+                    <mat-label>Add a question</mat-label>
+                    <input matInput type="search" placeholder="Input and hit enter" #question autocomplete="..." [matAutocomplete]="auto"
+                    (focus)="filterAutoComplete(questions)" (keyup)="filterAutoComplete(questions, question.value)" (keyup.enter)="newQuestion(questions, question, data.user.uid)">
+                    <mat-hint align="end" (click)="add('questions', question)" ><strong>Enter</strong></mat-hint>
+                    <mat-autocomplete #auto="matAutocomplete">
+                        <mat-option *ngFor="let q of filteredResult | async; trackBy: trackByFn" [value]="q">
+                        {{ q }}
+                        </mat-option>
+                    </mat-autocomplete>
+                </mat-form-field>
+            </div>
+
+            <h3>Locations</h3>
+
+            <mat-form-field appearance="outline" class="formField">
+                <mat-label>Remote working</mat-label>
+                <mat-select formControlName="remote">
+                    <mat-option *ngFor="let r of ['Remote not possible', 'Remote is possible', 'Only remote']; trackBy: trackByFn" [value]="r">
+                    {{ r }}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+            
+            <mat-form-field appearance="outline" class="formField" *ngIf="jobpost.value.remote != 'Only remote'">
+                <mat-label>Locations</mat-label>
+                <input matGoogleMapsAutocomplete (onAutocompleteSelected)="onAutocompleteSelected($event, location)" #location matInput autocomplete="off">
+                <mat-error>This field is required.</mat-error>
+            </mat-form-field>
+
+            <div cdkDropList class="drop-list" (cdkDropListDropped)="drop('locations', $event)">
+                <div class="list-box" *ngFor="let l of jobpost.get('locations').value; let j=index; trackBy: trackByFn" cdkDrag>
+                    <mat-icon cdkDragHandle class="mover">format_line_spacing</mat-icon >
+                    <span style="text-align: left; flex: 1;">{{ l.address }}</span>
+                    <mat-icon class="remove-icon" (click)="remove('locations', j); remove('countries', j)">remove_circle</mat-icon >
+                </div>
+            </div>
+
+            <agm-map *ngIf="jobpost.value.remote != 'Only remote' && jobpost.value.locations.length > 0" [zoom]=2 [latitude]=jobpost.value.locations[0]?.geopoint.latitude [longitude]=jobpost.value.locations[0]?.geopoint.longitude>
+                <agm-marker *ngFor="let l of jobpost.value.locations; trackBy: trackByFn" [latitude]=l.geopoint.latitude [longitude]=l.geopoint.longitude></agm-marker>
+            </agm-map>
+                            
+            <h2>Contract details</h2>
+
+            <div class="head">
+                <h3>Weekly working hours</h3>
+                <h3 style="font-size: 150%;">{{ jobpost.value.hours }}</h3>
+            </div>
+            
+            <div class="head margin10">
+                <mat-slider (input)="updateHours($event)" [max]=80 [min]=1 formControlName="hours" color="primary" style="flex: 1; margin-right: 20px;"></mat-slider>
+                <mat-checkbox formControlName="overtime" color="primary">Overtime</mat-checkbox>
+            </div>
+
+            <div class="head wrap">
+                <mat-form-field appearance="outline" class="pay">
+                    <mat-label>Currency</mat-label>
+                    <mat-select formControlName="currency">
+                        <mat-option *ngFor="let c of currencies" [value]="c">
+                            {{ c }}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="pay">
+                    <mat-label>Time</mat-label>
+                    <mat-select formControlName="time">
+                        <mat-option *ngFor="let t of time" [value]="t">
+                            {{ t }}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="pay">
+                    <mat-label>Base salary</mat-label>
+                    <input matInput formControlName="salary" style="text-align: right;" #salary type="number" min="1" autocomplete="off">
+                    <span matPrefix style="margin-right: 15px;">{{ 1 | currency: jobpost.value.currency | slice: 0:1 }}</span>
+                    <mat-error>Base salary is required.</mat-error>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="pay">
+                    <mat-label>Holidays</mat-label>
+                    <input matInput formControlName="holidays" style="text-align: right;" #salary type="number" min="1" autocomplete="off">
+                    <mat-error>Number of holidays is required.</mat-error>
+                </mat-form-field>
+            </div>
+
+            <h3>Benefits</h3>
+            <mat-form-field class="formField">
+                <mat-chip-list formArrayName="perks" #perkList aria-label="Fruit selection">
+                    <mat-chip *ngFor="let perk of jobpost.value.perks; let i = index; trackBy: trackByFn" color="primary" selected>
+                        {{ perk }}
+                        <mat-icon style="margin-left: 10px" (click)="remove('perks', i)">cancel</mat-icon>
+                    </mat-chip>
+                    <input placeholder="Job perks" #perk
+                            [matChipInputFor]="perkList"
+                            (keyup.enter)="add('perks', perk)">
+                </mat-chip-list>
+                <mat-hint align="end" (click)="add('perks', perk)" ><strong>Enter</strong></mat-hint>
+            </mat-form-field>
+        </div>
+    </div>
+</div>
